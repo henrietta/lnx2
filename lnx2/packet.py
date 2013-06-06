@@ -62,3 +62,15 @@ class Packet(object):
         header = bytearray(struct.pack('!BB', fhb, self.channel_id))
 
         return header + self.data
+
+
+    def is_equal(self, pack):
+        """
+        Check whether packets match exactly. Equality operator is not overloaded,
+        because some may check for the same object instead.
+
+        @type pack: Packet
+        """
+
+        return (self.is_ack == pack.is_ack) and (self.data == pack.data) and \
+         (self.window_id == pack.window_id) and (self.channel_id == pack.channel_id) 

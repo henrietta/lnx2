@@ -34,3 +34,13 @@ class PacketUnitTests(unittest.TestCase):
         s = bytearray('\x86\x04DUPA')
 
         self.assertRaises(PacketMalformedError, lambda: Packet.from_bytearray(s))
+
+    def test_equality(self):
+        p1 = Packet('DUPA', 4, 2)
+        p2 = Packet.from_bytearray('\x02\x04DUPA')
+
+        self.assertEqual(p1.is_equal(p2), True)
+
+        p3 = Packet.create_ack(4, 2)
+
+        self.assertEqual(p1.is_equal(p3), False)
