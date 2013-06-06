@@ -13,7 +13,8 @@ class Channel(object):
 
     def __init__(self, channel_id,
                        retransmission_mode=RTM_NONE, 
-                       retransmission_timeout=60):
+                       retransmission_timeout=60,
+                       max_bundle_size=20):
         """
         Initializes a LNX2 channel
 
@@ -21,10 +22,18 @@ class Channel(object):
         @param retransmission_mode: specifies retransmission behaviour
         @param retransmission_timeout: number of seconds after which delivery
             will be retried
+        @param max_bundle_size: maximum amount of window IDs in use in a single
+            moment. Maximum is 60.
         """
         self.retransmission_mode = retransmission_mode
         self.retransmission_timeout = retransmission_timeout
         self.channel_id = channel_id
+
+        if max_bundle_size > 60:
+            raise ValueError, 'Invalid max bundle size'
+
+        self.max_bundle_size = max_bundle_size
+
 
         self.buffer = collections.deque()
 
@@ -52,7 +61,10 @@ class Channel(object):
         """
         data = bytearray(data)
 
-        if self.retransmission_mode in (RTM_NONE, RTM_AUTO, RTM_AUTO_ORDERED):
+        if self.retransmission_mode == RTM_NONE:
+            self.tx_requests.appendleft(Packet(data, self.channel_id, 0))
+
+        elif self.retransmission_mode in (RTM_AUTO, RTM_AUTO_ORDERED):
             self.buffer.appendleft(data)
 
         elif self.retransmission_mode == RTM_MANUAL:
@@ -91,12 +103,9 @@ class Channel(object):
         @return: None or L{lnx2.Packet}
         """
         # tx_requests take precedence
+        # RTM_NONE write()s directly to tx_requests
         if len(self.tx_requests) > 0:
             return self.tx_requests.pop()
-
-        if self.retransmission_mode == RTM_NONE:
-            if len(self.buffer) > 0:
-                return Packet(self.buffer.pop(), self.channel_id, 0)
 
         if self.retransmission_mode == RTM_MANUAL:
             # Two cases are possible: either a new packet
@@ -112,7 +121,7 @@ class Channel(object):
                 # A packet can be sent
                 data = self.buffer.pop()
                 pk = Packet(data, self.channel_id, self.next_send_window_id)
-                self.next_send_window_id = (self.next_send_window_id + 1) % 255
+                self.next_send_window_id = (self.next_send_window_id + 1) % 64
                 self.packs_in_transit[pk.window_id] = time.time(), pk
                 return pk
 
@@ -133,6 +142,27 @@ class Channel(object):
 
                 return None     # no retransmission needed
 
+        elif self.retransmission_mode in (RTM_AUTO, RTM_AUTO_ORDERED):
+            if len(self.buffer) > 0:
+                # We can consider sending a new packet
+                if len(self.packs_in_transit) < self.max_bundle_size:
+                    # We are allowed to sent a new packet
+                    nwid = self.next_send_window_id
+                    self.next_send_window_id = (self.next_send_window_id + 1) % 64
+
+                    pk = Packet(self.buffer.pop(), self.channel_id, nwid)
+                    self.packs_in_transit[nwid] = time.time(), pk
+                    return pk
+
+            ctime = time.time()
+            # Check for retransmissions then
+            for time_sent, pack in self.packs_in_transit.itervalues():
+                if ctime - time_sent > self.retransmission_timeout:
+                    # A retransmission needs to be made
+                    self.packs_in_transit[pack.window_id] = ctime, pack
+                    return pack
+
+            return None
 
 
     def on_received(self, packet):
@@ -148,9 +178,20 @@ class Channel(object):
                 # Acknowledgement for a real packet that we sent
                 # earlier. Dequeue it from holding buffer
                 del self.packs_in_transit[packet.window_id]
-            else:
-                # This is an ACK for unknown packet, silently dropping
-                return
+
+                if self.retransmission_mode in (RTM_AUTO, RTM_AUTO_ORDERED):
+                    # Those may need to flush their holding_buffer to
+                    # prevent it from overflowing
+
+                    ind_to_flush = packet.window_id - self.max_bundle_size
+                    if ind_to_flush < 0:
+                        ind_to_flush += 64
+
+                    try:
+                        del self.holding_buffer[ind_to_flush]
+                    except KeyError:
+                        pass
+            return
 
                                 # -------------- Not an ACK
 
@@ -190,7 +231,7 @@ class Channel(object):
 
                     self.data_to_read.appendleft(pfb.data)
 
-                    self.next_expc_window_id = (self.next_expc_window_id + 1) % 255
+                    self.next_expc_window_id = (self.next_expc_window_id + 1) % 64
 
 
 
