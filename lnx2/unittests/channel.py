@@ -1,7 +1,8 @@
 import unittest
 
 from lnx2 import Packet, PacketMalformedError, Channel, RTM_NONE, \
-                 RTM_MANUAL, RTM_AUTO, RTM_AUTO_ORDERED
+                 RTM_MANUAL, RTM_AUTO, RTM_AUTO_ORDERED, \
+                 NothingToRead, NothingToSend
 
 from time import sleep
 
@@ -15,8 +16,6 @@ class ChannelUnitTests(unittest.TestCase):
 
         pk = alice_0.on_sendable()
 
-        self.assertEquals(isinstance(pk, Packet), True)
-
         bob_0.on_received(pk)
 
         self.assertEquals(bob_0.read(), bytearray('DUPA'))
@@ -27,8 +26,6 @@ class ChannelUnitTests(unittest.TestCase):
 
         alice_0.write(bytearray('DUPA'))
         pk = alice_0.on_sendable()
-
-        self.assertEquals(isinstance(pk, Packet), True)
 
         bob_0.on_received(pk)
 
@@ -48,12 +45,10 @@ class ChannelUnitTests(unittest.TestCase):
 
         alice_0.write(bytearray('DUPA'))
         pk = alice_0.on_sendable()
-        self.assertEquals(isinstance(pk, Packet), True)
 
         sleep(0.6)
 
         pk = alice_0.on_sendable()
-        self.assertEquals(isinstance(pk, Packet), True)
 
         bob_0.on_received(pk)
 
@@ -73,7 +68,7 @@ class ChannelUnitTests(unittest.TestCase):
         bob_0.on_received(pk)
 
         self.assertEquals(bob_0.read(), bytearray('DUPA'))        
-        self.assertEquals(bob_0.read(), None)
+        self.assertRaises(NothingToRead, bob_0.read)
 
     def test_RTM_MANUAL_ackduplication(self):
         alice_0 = Channel(0, RTM_MANUAL)
@@ -81,8 +76,6 @@ class ChannelUnitTests(unittest.TestCase):
 
         alice_0.write(bytearray('DUPA'))
         pk = alice_0.on_sendable()
-
-        self.assertEquals(isinstance(pk, Packet), True)
 
         bob_0.on_received(pk)
 
@@ -103,14 +96,12 @@ class ChannelUnitTests(unittest.TestCase):
 
         alice_0.write(bytearray('DUPA'))
         pk = alice_0.on_sendable()
-        self.assertEquals(isinstance(pk, Packet), True)
 
         sleep(0.6)
 
         alice_0.write(bytearray('STEFAN'))
 
         pk = alice_0.on_sendable()
-        self.assertEquals(isinstance(pk, Packet), True)
 
         bob_0.on_received(pk)
 
@@ -128,8 +119,6 @@ class ChannelUnitTests(unittest.TestCase):
 
         alice_0.write(bytearray('DUPA'))
         pk = alice_0.on_sendable()
-
-        self.assertEquals(isinstance(pk, Packet), True)
 
         bob_0.on_received(pk)
 
@@ -149,8 +138,6 @@ class ChannelUnitTests(unittest.TestCase):
         alice_0.write(bytearray('DUPA'))
         pk = alice_0.on_sendable()
 
-        self.assertEquals(isinstance(pk, Packet), True)
-
         bob_0.on_received(pk)
 
         self.assertEquals(bob_0.read(), bytearray('DUPA'))
@@ -169,12 +156,10 @@ class ChannelUnitTests(unittest.TestCase):
 
         alice_0.write(bytearray('DUPA'))
         pk = alice_0.on_sendable()
-        self.assertEquals(isinstance(pk, Packet), True)
 
         sleep(0.6)
 
         pk = alice_0.on_sendable()
-        self.assertEquals(isinstance(pk, Packet), True)
 
         bob_0.on_received(pk)
 
@@ -194,7 +179,7 @@ class ChannelUnitTests(unittest.TestCase):
         bob_0.on_received(pk)
 
         self.assertEquals(bob_0.read(), bytearray('DUPA'))        
-        self.assertEquals(bob_0.read(), None)
+        self.assertRaises(NothingToRead, bob_0.read)
 
     def test_RTM_AUTO_bundle_control(self):
         alice_0 = Channel(0, RTM_AUTO, 0.5, 2)
@@ -207,7 +192,7 @@ class ChannelUnitTests(unittest.TestCase):
         pk1 = alice_0.on_sendable()
         pk2 = alice_0.on_sendable()
 
-        self.assertEquals(alice_0.on_sendable(), None)
+        self.assertRaises(NothingToSend, alice_0.on_sendable)
 
         bob_0.on_received(pk2)
         ack_win2 = bob_0.on_sendable()
@@ -236,11 +221,11 @@ class ChannelUnitTests(unittest.TestCase):
 
         bob_0.on_received(dupa3)
 
-        self.assertEquals(bob_0.read(), None)
+        self.assertRaises(NothingToRead, bob_0.read)
 
         bob_0.on_received(dupa2)
 
-        self.assertEquals(bob_0.read(), None)
+        self.assertRaises(NothingToRead, bob_0.read)
 
         bob_0.on_received(dupa1)
 
@@ -248,6 +233,3 @@ class ChannelUnitTests(unittest.TestCase):
         self.assertEquals(bob_0.read(), bytearray('DUPA2'))
         self.assertEquals(bob_0.read(), bytearray('DUPA3'))
 
-
-
-                

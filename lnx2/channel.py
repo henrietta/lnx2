@@ -1,6 +1,7 @@
 import time, collections
 
-from lnx2.exceptions import LNX2Error, PacketMalformedError
+from lnx2.exceptions import LNX2Error, PacketMalformedError, \
+                            NothingToRead, NothingToSend
 from lnx2.packet import Packet
 
 RTM_NONE = 0
@@ -79,13 +80,14 @@ class Channel(object):
         """
         Reads a piece of data
 
-        Returns a bytearray of data is present, None otherwise
-        @return: bytearray or None
+        Returns a bytearray of data is present or raises
+        L{lnx2.NothingToRead} if there's nothing to read
+        @return: bytearray
         """
         try:
             return self.data_to_read.pop()
         except IndexError:
-            return None
+            raise NothingToRead
 
     def _enq_ack(self, window_id):
         """Enqueues an ACK packet to be sent in output buffer"""
@@ -98,9 +100,9 @@ class Channel(object):
         Called when something can be sent. 
 
         Returns a packet when it wants something to be sent,
-        or None if nothing is to be sent
+        or raises L{lnx2.NothingToSend} if nothing is to be sent
 
-        @return: None or L{lnx2.Packet}
+        @return: L{lnx2.Packet}
         """
         # tx_requests take precedence
         # RTM_NONE write()s directly to tx_requests
@@ -116,7 +118,7 @@ class Channel(object):
 
                 if len(self.buffer) == 0:
                     # There's nothing to send
-                    return None
+                    raise NothingToSend
 
                 # A packet can be sent
                 data = self.buffer.pop()
@@ -140,7 +142,7 @@ class Channel(object):
                     self.packs_in_transit[pack.window_id] = ctime, pack
                     return pack
 
-                return None     # no retransmission needed
+                raise NothingToSend     # no retransmission needed
 
         elif self.retransmission_mode in (RTM_AUTO, RTM_AUTO_ORDERED):
             if len(self.buffer) > 0:
@@ -162,7 +164,7 @@ class Channel(object):
                     self.packs_in_transit[pack.window_id] = ctime, pack
                     return pack
 
-            return None
+            raise NothingToSend
 
 
     def on_received(self, packet):
