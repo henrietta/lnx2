@@ -1,7 +1,6 @@
 import unittest
 
-from lnx2.packet import Packet
-from lnx2.exceptions import PacketMalformedError
+from lnx2 import Packet, PacketMalformedError
 
 class PacketUnitTests(unittest.TestCase):
 
