@@ -29,7 +29,11 @@ class Packet(object):
     def from_bytearray(data):
         """Creates a packet from received data - including header"""
 
-        fhb, channel_id = struct.unpack('!BB', str(data[0:2]))
+        try:
+            fhb, channel_id = struct.unpack('!BB', str(data[0:2]))
+        except struct.error:
+            raise PacketMalformedError, 'too short'
+
         rest_of_pack = data[2:]
 
         window_id = fhb & 63     # Lower 6 bits

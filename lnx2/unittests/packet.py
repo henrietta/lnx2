@@ -43,3 +43,7 @@ class PacketUnitTests(unittest.TestCase):
         p3 = Packet.create_ack(4, 2)
 
         self.assertEqual(p1.is_equal(p3), False)
+
+    def test_too_short(self):
+        k = lambda: Packet.from_bytearray(bytearray('Z'))
+        self.assertRaises(PacketMalformedError, k)
