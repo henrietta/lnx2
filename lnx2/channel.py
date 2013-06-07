@@ -172,7 +172,7 @@ class Channel(object):
                     self.packs_in_transit[pack.window_id] = ctime, pack
                     return pack
 
-            raise NothingToSend
+        raise NothingToSend
 
 
     def on_received(self, packet):
@@ -242,8 +242,3 @@ class Channel(object):
                     self.data_to_read.appendleft(pfb.data)
 
                     self.next_expc_window_id = (self.next_expc_window_id + 1) % 64
-
-
-
-
-
