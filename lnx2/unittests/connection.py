@@ -49,3 +49,10 @@ class ConnectionUnitTests(unittest.TestCase):
         alice = Connection([alice_0, alice_1])
 
         self.assertRaises(NothingToSend, alice.on_sendable)
+
+    def test_timeout(self):
+        alice = Connection([], 0.5)
+        self.assertEquals(alice.has_timeouted(), False)        
+        sleep(0.6)
+
+        self.assertEquals(alice.has_timeouted(), True)        
