@@ -181,7 +181,7 @@ class ChannelUnitTests(unittest.TestCase):
         self.assertEquals(bob_0.read(), bytearray('DUPA'))        
         self.assertRaises(NothingToRead, bob_0.read)
 
-    def test_RTM_AUTO_bundle_control(self):
+    def test_RTM_AUTO_bundle_control_1(self):
         alice_0 = Channel(0, RTM_AUTO, 0.5, 2)
         bob_0 = Channel(0, RTM_AUTO, 0.5, 2)
 
@@ -206,6 +206,32 @@ class ChannelUnitTests(unittest.TestCase):
         self.assertRaises(NothingToSend, alice_0.on_sendable)
         # it is forbidden to send DUPA3 now because DUPA1
         # has not been acknowledged and max bundle size is 1
+
+    def test_RTM_AUTO_bundle_control_2(self):
+        alice_0 = Channel(0, RTM_AUTO, 0.5, 2)
+        bob_0 = Channel(0, RTM_AUTO, 0.5, 2)
+
+        alice_0.write(bytearray('DUPA1'))
+        alice_0.write(bytearray('DUPA2'))
+        alice_0.write(bytearray('DUPA3'))
+
+        pk1 = alice_0.on_sendable()
+        pk2 = alice_0.on_sendable()
+
+        self.assertRaises(NothingToSend, alice_0.on_sendable)
+
+        bob_0.on_received(pk1)
+        ack_win1 = bob_0.on_sendable()
+        self.assertEquals(ack_win1.is_ack, True)
+        self.assertEquals(ack_win1.window_id, 0)
+
+        alice_0.on_received(ack_win1)    # Alice receives ACK for DUPA2
+
+        self.assertEquals(bob_0.read(), bytearray('DUPA1'))
+
+        pk3 = alice_0.on_sendable()
+        self.assertEquals(pk3.data, bytearray('DUPA3'))
+        # it is allowed to send DUPA3, because DUPA1 was confirmed
 
     def test_RTM_AUTO_ORDER_reordering(self):
         alice_0 = Channel(0, RTM_AUTO_ORDERED, 0.5, 5)
