@@ -1,0 +1,4 @@
+Set of two applications to transfer a file across network, using channel 0
+with RTM_AUTO_ORDERED.
+
+First packet spells out the file length, and then the file follows. 
