@@ -148,13 +148,21 @@ class Channel(object):
             if len(self.buffer) > 0:
                 # We can consider sending a new packet
                 if len(self.packs_in_transit) < self.max_bundle_size:
-                    # We are allowed to sent a new packet
+                    # We seem to be allowed to sent a new packet
                     nwid = self.next_send_window_id
-                    self.next_send_window_id = (self.next_send_window_id + 1) % 64
 
-                    pk = Packet(self.buffer.pop(), self.channel_id, nwid)
-                    self.packs_in_transit[nwid] = time.time(), pk
-                    return pk
+                    # Check if there's an unsent window ID that has not
+                    # been confirmed
+                    naxid = nwid - self.max_bundle_size
+                    if naxid < 0: naxid += 64
+
+                    if naxid not in self.packs_in_transit:
+                        # there are no missing windows. Go on.
+                        self.next_send_window_id = (self.next_send_window_id + 1) % 64
+
+                        pk = Packet(self.buffer.pop(), self.channel_id, nwid)
+                        self.packs_in_transit[nwid] = time.time(), pk
+                        return pk
 
             ctime = time.time()
             # Check for retransmissions then

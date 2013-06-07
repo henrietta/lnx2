@@ -203,9 +203,9 @@ class ChannelUnitTests(unittest.TestCase):
 
         self.assertEquals(bob_0.read(), bytearray('DUPA2'))
 
-        pk3 = alice_0.on_sendable()
-
-        self.assertEquals(pk3.data, bytearray('DUPA3'))
+        self.assertRaises(NothingToSend, alice_0.on_sendable)
+        # it is forbidden to send DUPA3 now because DUPA1
+        # has not been acknowledged and max bundle size is 1
 
     def test_RTM_AUTO_ORDER_reordering(self):
         alice_0 = Channel(0, RTM_AUTO_ORDERED, 0.5, 5)
