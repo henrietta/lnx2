@@ -14,17 +14,23 @@ ip_addr = sys.argv[1]
 ip_port = int(sys.argv[2])
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind((ip_addr, 0))
+sock.bind(('0.0.0.0', 0))
 
 # -------- LNX2 getup
 c0 = lnx2.Channel(0, lnx2.RTM_AUTO_ORDERED, 30)
 c = lnx2.Connection([c0], 120)
 s = lnx2.ClientSocket(sock, (ip_addr, ip_port), c)
 
+indata = bytearray()
 
-with open(sys.argv[3]) as infile:
-    indata = infile.read()
+with open(sys.argv[3], 'rb') as infile:
+    while True:
+        x = infile.read(1024)
+        if len(x) == 0:
+            break
+        indata.extend(x)
 
+print 'Length of file to send: %s' % len(indata)
 c[0].write(bytearray(struct.pack('!L', len(indata))))
 
 # enqueue the file to be sent

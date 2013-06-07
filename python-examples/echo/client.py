@@ -11,7 +11,7 @@ ip_addr = sys.argv[1]
 ip_port = int(sys.argv[2])
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind((ip_addr, 0))
+sock.bind(('0.0.0.0', 0))
 
 # -------- LNX2 getup
 c0 = lnx2.Channel(0, lnx2.RTM_AUTO_ORDERED, 2)
