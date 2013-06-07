@@ -1,0 +1,4 @@
+A simple echo server. Client connects to server and sends a message
+on channel 0 with method RTM_AUTO_ORDERING.
+
+Server replies then with exactly the same message.
