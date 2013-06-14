@@ -20,16 +20,12 @@ public class packettest {
 	}
 		
 	@Test
-	public void testUnserialization() {
+	public void testUnserialization() throws PacketMalformedError {
 		// ------- test a packet with data
 		byte[] data_packet_src = {6, 4, 0, 1, 2, 3};
 		
 		Packet data_packet = null;
-		try {
-			data_packet = Packet.from_bytes(data_packet_src);
-		} catch (PacketMalformedError e) {
-			fail("Packet malformed error");
-		}
+		data_packet = Packet.from_bytes(data_packet_src);
 
 		if (!Arrays.equals(data_packet.data, this.test_data)) fail("Data mismatch");
 		if (data_packet.window_id != (byte)6) fail("Window mismatch");
@@ -39,11 +35,7 @@ public class packettest {
 		byte[] ack_packet_src = {(byte)(128+6), 4};
 		Packet ack_packet = null;
 		
-		try {
-			ack_packet = Packet.from_bytes(ack_packet_src);
-		} catch (PacketMalformedError e) {
-			fail("Packet malformed error");
-		}
+		ack_packet = Packet.from_bytes(ack_packet_src);
 
 		if (ack_packet.window_id != (byte)6) fail("Window mismatch");
 		if (ack_packet.channel_id != (byte)4) fail("Channel mismatch");
@@ -54,6 +46,7 @@ public class packettest {
 		
 		boolean was_thrown = false;
 		try {
+			@SuppressWarnings("unused")
 			Packet invalid_packet = Packet.from_bytes(invalid_packet_src);
 		} catch (PacketMalformedError e) {
 			was_thrown = true;
@@ -63,15 +56,11 @@ public class packettest {
 	}
 	
 	@Test
-	public void testEquality() {
+	public void testEquality() throws PacketMalformedError {
 		byte[] testpak = {6, 4, 0, 1, 2, 3};
 		Packet p1 = new Packet(this.test_data, (byte)4, (byte)6);
 		Packet p2 = null;
-		try {
-			p2 = Packet.from_bytes(testpak);
-		} catch (PacketMalformedError e) {
-			fail("Packet malformed error");
-		}
+		p2 = Packet.from_bytes(testpak);
 		
 		if (!p1.equals(p2)) fail("Not equal");
 	}
@@ -81,6 +70,7 @@ public class packettest {
 		byte[] testpak = {1};
 		boolean was_thrown = false;
 		try {
+			@SuppressWarnings("unused")
 			Packet p = Packet.from_bytes(testpak);
 		} catch (PacketMalformedError e) {
 			was_thrown = true;
