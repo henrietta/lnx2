@@ -57,7 +57,7 @@ class ChannelUnitTests(unittest.TestCase):
 
         alice_0.on_received(ack)
 
-        self.assertEquals(len(alice_0.packs_in_transit), 0)
+        self.assertEquals(alice_0.is_tx_in_progress(), False)
 
     def test_RTM_MANUAL_duplication(self):
         pk = Packet(bytearray('DUPA'), 0, 0)
@@ -87,7 +87,7 @@ class ChannelUnitTests(unittest.TestCase):
         alice_0.on_received(ack)
         alice_0.on_received(ack)
 
-        self.assertEquals(len(alice_0.packs_in_transit), 0)
+        self.assertEquals(alice_0.is_tx_in_progress(), False)
 
     def test_RTM_MANUAL_handover(self):
         """Tests an in-transmission packet content change"""
@@ -110,7 +110,7 @@ class ChannelUnitTests(unittest.TestCase):
 
         alice_0.on_received(ack)
 
-        self.assertEquals(len(alice_0.packs_in_transit), 0)        
+        self.assertEquals(alice_0.is_tx_in_progress(), False)
         self.assertEquals(bob_0.read(), bytearray('STEFAN'))
 
     def test_RTM_AUTO_normalsend(self):
@@ -129,7 +129,7 @@ class ChannelUnitTests(unittest.TestCase):
 
         alice_0.on_received(ack)
 
-        self.assertEquals(len(alice_0.packs_in_transit), 0)
+        self.assertEquals(alice_0.is_tx_in_progress(), False)
 
     def test_RTM_AUTO_ackduplication(self):
         alice_0 = Channel(0, RTM_AUTO)
@@ -137,6 +137,7 @@ class ChannelUnitTests(unittest.TestCase):
 
         alice_0.write(bytearray('DUPA'))
         pk = alice_0.on_sendable()
+        self.assertEquals(alice_0.is_tx_in_progress(), True)
 
         bob_0.on_received(pk)
 
@@ -148,7 +149,7 @@ class ChannelUnitTests(unittest.TestCase):
         alice_0.on_received(ack)
         alice_0.on_received(ack)
 
-        self.assertEquals(len(alice_0.packs_in_transit), 0)
+        self.assertEquals(alice_0.is_tx_in_progress(), False)
 
     def test_RTM_AUTO_resend(self):
         alice_0 = Channel(0, RTM_AUTO, 0.5)
@@ -160,6 +161,7 @@ class ChannelUnitTests(unittest.TestCase):
         sleep(0.6)
 
         pk = alice_0.on_sendable()
+        self.assertEquals(alice_0.is_tx_in_progress(), True)
 
         bob_0.on_received(pk)
 
@@ -168,7 +170,7 @@ class ChannelUnitTests(unittest.TestCase):
 
         alice_0.on_received(ack)
 
-        self.assertEquals(len(alice_0.packs_in_transit), 0)
+        self.assertEquals(alice_0.is_tx_in_progress(), False)
 
     def test_RTM_AUTO_duplication(self):
         pk = Packet(bytearray('DUPA'), 0, 0)

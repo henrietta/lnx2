@@ -20,6 +20,7 @@ public class channeltest {
 		Channel bob_0 = new Channel((byte)0, RetransmissionMode.RTM_NONE, 1, 1);
 		
 		alice_0.write(this.test_data);
+		if (!alice_0.is_tx_in_progress()) fail("Comms ended");
 		
 		Packet pkt = alice_0.on_sendable();
 		bob_0.on_received(pkt);
@@ -45,7 +46,7 @@ public class channeltest {
 		if (!ack.is_ack) fail("Not ACK");
 		
 		alice_0.on_received(ack);
-		// TODO: check if alice_0 ended comms
+		if (alice_0.is_tx_in_progress()) fail("Comms not ended");
 	}
 
 	@Test
@@ -65,7 +66,7 @@ public class channeltest {
 		if (!ack.is_ack) fail("Not ACK");
 		
 		alice_0.on_received(ack);
-		// TODO: check if alice_0 ended comms		
+		if (alice_0.is_tx_in_progress()) fail("Comms not ended");
 	}
 	
 	@Test
@@ -106,7 +107,7 @@ public class channeltest {
 		alice_0.on_received(ack);
 		alice_0.on_received(ack);
 		
-		// TODO: check that alice has ended comms
+		if (alice_0.is_tx_in_progress()) fail("Comms not ended");
 	}
 	
 	@Test
@@ -129,7 +130,7 @@ public class channeltest {
 		if (!ack.is_ack) fail("Not ACK");
 		
 		alice_0.on_received(ack);
-		// TODO: check that alice has ended comms
+		if (alice_0.is_tx_in_progress()) fail("Comms not ended");
 	}
 	
 	@Test
@@ -148,7 +149,7 @@ public class channeltest {
 		if (!ack.is_ack) fail("Not ACK");
 		
 		alice_0.on_received(ack);
-		// TODO: check if alice_0 ended comms
+		if (alice_0.is_tx_in_progress()) fail("Comms not ended");
 	}
 
 	@Test
@@ -157,7 +158,9 @@ public class channeltest {
 		Channel bob_0 = new Channel((byte)0, RetransmissionMode.RTM_AUTO, (float)0.5, 1);
 		
 		alice_0.write(this.test_data);
+		if (!alice_0.is_tx_in_progress()) fail("Comms ended");
 		Packet pkt = alice_0.on_sendable();
+		if (!alice_0.is_tx_in_progress()) fail("Comms ended");
 		
 		Thread.sleep(600);
 		
@@ -168,7 +171,7 @@ public class channeltest {
 		if (!ack.is_ack) fail("Not ACK");
 		
 		alice_0.on_received(ack);
-		// TODO: check if alice_0 ended comms		
+		if (alice_0.is_tx_in_progress()) fail("Comms not ended");
 	}
 	
 	@Test
@@ -199,6 +202,7 @@ public class channeltest {
 
 		alice_0.write(this.test_data);
 		Packet pkt = alice_0.on_sendable();
+		if (!alice_0.is_tx_in_progress()) fail("Comms ended");
 		
 		bob_0.on_received(pkt);
 		if (!Arrays.equals(bob_0.read(), this.test_data)) fail("Not equal");
@@ -209,7 +213,7 @@ public class channeltest {
 		alice_0.on_received(ack);
 		alice_0.on_received(ack);
 		
-		// TODO: check that alice has ended comms
+		if (alice_0.is_tx_in_progress()) fail("Comms not ended");
 	}	
 	
 	

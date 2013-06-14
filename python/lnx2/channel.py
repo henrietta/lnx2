@@ -175,6 +175,13 @@ class Channel(object):
         raise NothingToSend
 
 
+    def is_tx_in_progress(self):
+        """Checks whether there are any unacknowledged packets or any
+        data to send.
+        @return: true if there are any unACKed packets or tx buffers not empty"""
+        return (len(self.packs_in_transit) > 0) or (len(self.buffer) > 0) or \
+               (len(self.tx_requests) > 0)
+
     def on_received(self, packet):
         """
         Signal from upper layer that a data package was received.

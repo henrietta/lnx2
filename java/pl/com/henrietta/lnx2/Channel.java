@@ -85,6 +85,15 @@ public class Channel {
 	}
 	
 	/**
+	 * Checks if there is any outbound data
+	 * @return true if there is data to send or there are unACKnowledged packets
+	 */
+	public boolean is_tx_in_progress() {
+		return (this.packs_in_transit.size() > 0) || (this.buffer.size() > 0) ||
+			   (this.tx_requests.size() > 0);
+	}
+	
+	/**
 	 * Arranges to have data sent
 	 * @param data data to send. Reference borrowed by this class.
 	 */
