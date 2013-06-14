@@ -14,9 +14,9 @@ import pl.com.henrietta.lnx2.exceptions.NothingToSend;
  */
 public class Channel {
 	// Parameters
-	private byte channel_id;
+	public byte channel_id;
 	private RetransmissionMode retransmission_mode;
-	private float retransmission_timeout;
+	private double retransmission_timeout;
 	private int max_bundle_size;
 	
 	// Class properties
@@ -29,11 +29,11 @@ public class Channel {
 	
 	private class PacketWithResendingLabel {
 		/** Timestamp of 'when sent' */
-		public float when_sent;
+		public double when_sent;
 		/** Packet object */
 		public Packet packet;
 		
-		public PacketWithResendingLabel(float when_sent, Packet packet) {
+		public PacketWithResendingLabel(double when_sent, Packet packet) {
 			this.when_sent = when_sent;
 			this.packet = packet;
 		}		
@@ -67,7 +67,7 @@ public class Channel {
 	 * Maximum is 60. If value is larger, it will be silently truncated to 60.
 	 */
 	public Channel(byte channel_id, RetransmissionMode retransmission_mode,
-				   float retransmission_timeout, int max_bundle_size) {
+				   double retransmission_timeout, int max_bundle_size) {
 		this.channel_id = channel_id;
 		this.retransmission_mode = retransmission_mode;
 		this.retransmission_timeout = retransmission_timeout;
@@ -149,7 +149,7 @@ public class Channel {
 				if (this.buffer.isEmpty()) throw new NothingToSend();
 				byte[] data_to_send = this.buffer.pollLast();
 				Packet pkt = new Packet(data_to_send, this.channel_id, (byte)this.next_send_window_id);
-				float ctime = (float)(System.nanoTime() / 1000000000.0);
+				double ctime = (double)(System.currentTimeMillis() / 1000.0);
 				PacketWithResendingLabel pwrl = new PacketWithResendingLabel(ctime, pkt);
 				this.next_send_window_id = (this.next_send_window_id + 1) % 64;
 				
@@ -157,7 +157,7 @@ public class Channel {
 				return pkt;
 			} else {
 				// a retransmission should be reconsidered
-				float ctime = (float)(System.nanoTime() / 1000000000.0);
+				double ctime = (double)(System.currentTimeMillis() / 1000.0);
 				PacketWithResendingLabel pwrl = this.packs_in_transit.values().iterator().next();
 				if (ctime - pwrl.when_sent > this.retransmission_timeout) {
 					// yes, retransmission should be done
@@ -185,14 +185,14 @@ public class Channel {
 						// there are no missing windows. Go on.
 						this.next_send_window_id = (this.next_send_window_id + 1) % 64;
 						Packet pk = new Packet(this.buffer.pollLast(), this.channel_id, (byte)nwid);
-						float ctime = (float)(System.nanoTime() / 1000000000.0);
+						double ctime = (double)(System.currentTimeMillis() / 1000.0);
 						this.packs_in_transit.put(nwid, new PacketWithResendingLabel(ctime, pk));
 						return pk;
 					}
 				}
 			}
 			// check for retransmissions then
-			float ctime = (float)(System.nanoTime() / 1000000000.0);
+			double ctime = (double)(System.currentTimeMillis() / 1000.0);
 			for (PacketWithResendingLabel pwrl : this.packs_in_transit.values()) {
 				if (ctime - pwrl.when_sent > this.retransmission_timeout) {
 					// retransmission needs to be made

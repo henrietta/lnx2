@@ -9,11 +9,19 @@ import pl.com.henrietta.lnx2.Packet;
 import pl.com.henrietta.lnx2.Channel;
 import pl.com.henrietta.lnx2.RetransmissionMode;
 
+import java.lang.System;
+
 public class channeltest {
 	
 	private byte[] test_data = {0, 1, 2, 3};
 	private byte[] alt_test_data = {4, 5, 6, 7};
 	private byte[] alt2_test_data = {8, 9, 10, 11};
+	
+	@Test
+	public void testChannelIDPublic() {
+		Channel alice_0 = new Channel((byte)0, RetransmissionMode.RTM_NONE, 1, 1);
+		if (alice_0.channel_id != 0) fail("Invalid channel id");
+	}
 	
 	@Test
 	public void testRTM_NONE() throws NothingToSend, NothingToRead {
