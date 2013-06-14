@@ -205,7 +205,7 @@ class ChannelUnitTests(unittest.TestCase):
 
         self.assertRaises(NothingToSend, alice_0.on_sendable)
         # it is forbidden to send DUPA3 now because DUPA1
-        # has not been acknowledged and max bundle size is 1
+        # has not been acknowledged and max bundle size is 2
 
     def test_RTM_AUTO_bundle_control_2(self):
         alice_0 = Channel(0, RTM_AUTO, 0.5, 2)
