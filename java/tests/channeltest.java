@@ -9,8 +9,6 @@ import pl.com.henrietta.lnx2.Packet;
 import pl.com.henrietta.lnx2.Channel;
 import pl.com.henrietta.lnx2.RetransmissionMode;
 
-import java.lang.System;
-
 public class channeltest {
 	
 	private byte[] test_data = {0, 1, 2, 3};
@@ -268,7 +266,7 @@ public class channeltest {
 		alice_0.write(this.alt2_test_data);
 		
 		Packet pk1 = alice_0.on_sendable();
-		Packet pk2 = alice_0.on_sendable();
+		alice_0.on_sendable();
 
 		boolean thrown = false;
 		try { alice_0.on_sendable(); } catch (NothingToSend n) { thrown = true; }

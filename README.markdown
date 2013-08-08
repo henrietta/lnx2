@@ -4,4 +4,4 @@ Multiplexing up to 256 logical channels, of which each can have different reliab
 
 It is currently implemented for Python and Java.
 
-For license, see attached COPYING file.
+For license, see attached COPYING file. For instructions on usage, see HOWTO and python-examples.
