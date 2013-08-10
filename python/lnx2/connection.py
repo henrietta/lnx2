@@ -65,3 +65,8 @@ class Connection(object):
 
     def __getitem__(self, channel_id):
         return self.channels[channel_id]
+
+    def get_channels(self):
+        """Return a iterator of Channel objects 
+        registered for this connection"""
+        return self.channels.itervalues()
