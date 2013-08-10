@@ -34,6 +34,7 @@ public class connectiontest {
 		bob.on_received(alice.on_sendable());
 		
 		if (!Arrays.equals(bob.getChannel(0).read(), this.test_data)) fail("Not equal");
+		if (!bob.has_new_data) fail("No 'has new data'");
 	}
 	
 	@Test
@@ -54,10 +55,11 @@ public class connectiontest {
 		
 		alice.getChannel(0).write(this.test_data);
 		bob.on_received(alice.on_sendable());
-		
+			
 		boolean thrown = false;
 		try { bob.getChannel(1).read(); } catch (NothingToRead n) { thrown = true; }
 		if (!thrown) fail("Not thrown");
+		if (bob.has_new_data) fail("Has new data");		
 	}
 	
 	@Test
@@ -68,6 +70,7 @@ public class connectiontest {
 		Thread.sleep(600);
 		
 		if (!alice.has_timeouted()) fail("Not timeouted");
+		if (alice.has_new_data) fail("Has new data");
 	}
 
 	

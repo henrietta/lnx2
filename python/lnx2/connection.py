@@ -21,6 +21,7 @@ class Connection(object):
         self.last_reception_on = time.time()    # time something was last
                                                 # received
         self.timeout = timeout
+        self.has_new_data = False 
 
     def has_timeouted(self):
         """Returns whether connection timeouted"""
@@ -45,12 +46,16 @@ class Connection(object):
 
     def on_received(self, packet):
         """
-        Called when a packet arrives
+        Called when a packet arrives.
+        This will set local flag .has_new_data to True if any of the channels
+        has new data to read. You must unset this flag yourself later.
+        This flag will be a instance variable 'has_new_data'
 
         @type packet: L{lnx2.Packet}
         """
         try:
-            self.channels[packet.channel_id].on_received(packet)
+            if self.channels[packet.channel_id].on_received(packet):
+                self.has_new_data = True
         except KeyError:
             # we don't support this channel on this realization
             # silently drop the packet

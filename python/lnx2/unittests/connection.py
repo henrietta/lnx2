@@ -25,6 +25,7 @@ class ConnectionUnitTests(unittest.TestCase):
         bob.on_received(pk1)
 
         self.assertEquals(bob[0].read(), bytearray('DUPA1'))
+        self.assertEquals(bob.has_new_data, True)
 
     def test_misrouting(self):
         alice_0 = Channel(0, RTM_NONE)
@@ -41,6 +42,7 @@ class ConnectionUnitTests(unittest.TestCase):
         bob.on_received(pk)
 
         self.assertRaises(NothingToRead, bob[1].read)
+        self.assertEquals(bob.has_new_data, False)
 
     def test_nothingtosend(self):
         alice_0 = Channel(0, RTM_NONE)
@@ -55,4 +57,5 @@ class ConnectionUnitTests(unittest.TestCase):
         self.assertEquals(alice.has_timeouted(), False)        
         sleep(0.6)
 
-        self.assertEquals(alice.has_timeouted(), True)        
+        self.assertEquals(alice.has_timeouted(), True)     
+        self.assertEquals(alice.has_new_data, False) 

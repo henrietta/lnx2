@@ -188,6 +188,7 @@ class Channel(object):
         Data may be available to read after this
 
         @type packet: L{lnx2.packet.Packet}
+        @return: whether this channel has new data to read
         """
 
         if packet.is_ack:       # -------------- This is an ACK
@@ -208,7 +209,7 @@ class Channel(object):
                         del self.holding_buffer[ind_to_flush]
                     except KeyError:
                         pass
-            return
+            return False
 
                                 # -------------- Not an ACK
 
@@ -229,12 +230,14 @@ class Channel(object):
         # This is not a retransmission, this is a new packet
         if self.retransmission_mode == RTM_NONE:
             self.data_to_read.appendleft(packet.data)
+            return True
 
         elif self.retransmission_mode in (RTM_MANUAL, RTM_AUTO):
             self.data_to_read.appendleft(packet.data)
             self._enq_ack(packet.window_id)
 
             self.holding_buffer[packet.window_id] = packet
+            return True
 
         else:   # RTM_AUTO_ORDERED
             self._enq_ack(packet.window_id)
@@ -249,3 +252,7 @@ class Channel(object):
                     self.data_to_read.appendleft(pfb.data)
 
                     self.next_expc_window_id = (self.next_expc_window_id + 1) % 64
+
+                return True
+
+        return False
