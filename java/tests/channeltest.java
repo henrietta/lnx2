@@ -77,6 +77,30 @@ public class channeltest {
 	}
 	
 	@Test
+	public void testRTM_MANUAL_dualsend() throws NothingToSend, NothingToRead, InterruptedException {
+		Channel alice_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.5, 1);
+		Channel bob_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.5, 1);
+
+		alice_0.write(this.test_data);
+		Packet pkt = alice_0.on_sendable();
+		bob_0.on_received(pkt);
+		alice_0.on_received(bob_0.on_sendable());
+		
+		// Ok, we should have a good packet here
+		byte[] rdata = bob_0.read();
+		if (!Arrays.equals(this.test_data, rdata)) fail("Data not equal");
+		
+		// Let's roll it again
+		alice_0.write(this.test_data);
+		pkt = alice_0.on_sendable();
+		bob_0.on_received(pkt);
+		alice_0.on_received(bob_0.on_sendable());
+
+		rdata = bob_0.read();
+		if (!Arrays.equals(this.test_data, rdata)) fail("Data not equal");
+	}
+	
+	@Test
 	public void testRTM_MANUAL_duplication() throws NothingToSend, NothingToRead {
 		Channel bob_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, 1, 1);
 
