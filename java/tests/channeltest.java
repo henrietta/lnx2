@@ -89,6 +89,7 @@ public class channeltest {
 		// Ok, we should have a good packet here
 		byte[] rdata = bob_0.read();
 		if (!Arrays.equals(this.test_data, rdata)) fail("Data not equal");
+		if (alice_0.is_tx_in_progress()) fail("Comms not ended");
 		
 		// Let's roll it again
 		alice_0.write(this.test_data);
@@ -98,7 +99,24 @@ public class channeltest {
 
 		rdata = bob_0.read();
 		if (!Arrays.equals(this.test_data, rdata)) fail("Data not equal");
+		if (alice_0.is_tx_in_progress()) fail("Comms not ended");
 	}
+	
+	@Test
+	public void testRTM_MANUAL_iwan() throws NothingToSend, NothingToRead, InterruptedException {
+		Channel alice_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.5, 1);
+		Channel bob_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.5, 1);
+
+		alice_0.write(this.test_data);
+		Packet pkt = alice_0.on_sendable();
+		bob_0.on_received(pkt);
+		bob_0.write(this.test_data);
+		
+		alice_0.on_received(bob_0.on_sendable());
+		alice_0.on_received(bob_0.on_sendable());
+		
+		if (!Arrays.equals(alice_0.read(), this.test_data)) fail("Not equal");
+	}	
 	
 	@Test
 	public void testRTM_MANUAL_duplication() throws NothingToSend, NothingToRead {
