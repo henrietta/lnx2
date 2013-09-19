@@ -160,6 +160,29 @@ public class channeltest {
 	}
 	
 	@Test
+	public void testRTM_MANUAL_hand2over() throws NothingToSend, NothingToRead { 
+		Channel alice_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.5, 1);
+		Channel bob_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.5, 1);
+
+		alice_0.write(this.test_data);
+		Packet pkt = alice_0.on_sendable();
+		
+		bob_0.on_received(pkt);
+		alice_0.write(this.alt_test_data);
+		Packet brp = bob_0.on_sendable();
+		
+		alice_0.on_received(brp);
+		
+		bob_0.on_received(alice_0.on_sendable());
+		alice_0.on_received(bob_0.on_sendable());
+		
+		byte[] a = bob_0.read();
+		if (!Arrays.equals(this.test_data, a)) fail("Not equal 1");
+		a = bob_0.read();
+		if (!Arrays.equals(this.alt_test_data, a)) fail("Not equal 2");
+	}
+	
+	@Test
 	public void testRTM_MANUAL_handover() throws NothingToSend, NothingToRead, InterruptedException {
 		Channel alice_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.5, 1);
 		Channel bob_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.5, 1);
