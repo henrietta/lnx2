@@ -5,6 +5,7 @@ from lnx2 import Packet, PacketMalformedError, Channel, RTM_NONE, \
                  NothingToRead, NothingToSend
 
 from time import sleep
+from random import randint
 
 class ChannelUnitTests(unittest.TestCase):
 
@@ -88,7 +89,35 @@ class ChannelUnitTests(unittest.TestCase):
         alice_0.on_received(ack)
 
         self.assertEquals(alice_0.is_tx_in_progress(), False)
+        
+    def test_RTM_MANUAL_more64randomed(self):
+        alice_0 = Channel(0, RTM_MANUAL)
+        bob_0 = Channel(0, RTM_MANUAL)
+        
+        for i in xrange(0, 500):
+            dts = bytearray([randint(0, 255) for x in xrange(0, 20)])
+            alice_0.write(dts)
+            p = alice_0.on_sendable()
+            bob_0.on_received(p)
+            alice_0.on_received(bob_0.on_sendable())
+            
+            self.assertEquals(bob_0.read(), dts)
 
+    def test_RTM_MANUAL_more64(self):
+        alice_0 = Channel(0, RTM_MANUAL)
+        bob_0 = Channel(0, RTM_MANUAL)
+        
+        dts = bytearray([randint(0, 255) for x in xrange(0, 20)])
+        
+        for i in xrange(0, 500):
+            alice_0.write(dts)
+            p = alice_0.on_sendable()
+            bob_0.on_received(p)
+            alice_0.on_received(bob_0.on_sendable())
+            
+            self.assertEquals(bob_0.read(), dts)
+            
+            
     def test_RTM_MANUAL_handover(self):
         """Tests an in-transmission packet content change"""
         alice_0 = Channel(0, RTM_MANUAL, 0.5)

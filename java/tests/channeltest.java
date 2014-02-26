@@ -2,8 +2,11 @@ package tests;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
 import java.util.Arrays;
+import java.util.Random;
 import java.lang.Thread;
+
 import pl.com.henrietta.lnx2.exceptions.*;
 import pl.com.henrietta.lnx2.Packet;
 import pl.com.henrietta.lnx2.Channel;
@@ -56,6 +59,79 @@ public class channeltest {
 		if (alice_0.is_tx_in_progress()) fail("Comms not ended");
 	}
 
+	
+	@Test
+	public void testRTM_MANUAL_more64() throws NothingToSend, NothingToRead, InterruptedException {
+		Channel alice_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.1, 1);
+		Channel bob_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.1, 1);
+
+		Packet p = null;
+		
+		int acks_expected = 0;
+		
+		for (int i=0; i<200; i++) {
+			alice_0.write(this.test_data);
+			try {
+				p = alice_0.on_sendable();
+			} catch (NothingToSend s) {
+				fail("Alice should sent but she doesn't");
+			}
+			bob_0.on_received(p);
+			acks_expected++;
+			bob_0.read();
+			
+			try {
+				Packet x = bob_0.on_sendable();
+				if (!x.is_ack) fail("Expected ACK, didn't get one");
+				alice_0.on_received(x);
+				acks_expected--;
+			} catch (NothingToSend s) {
+				
+			}
+		}
+
+		if (acks_expected != 0) fail("Not all messages acknowledged");
+	}
+
+	@Test
+	public void testRTM_MANUAL_more64randomed() throws NothingToSend, NothingToRead, InterruptedException {
+		Channel alice_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.1, 1);
+		Channel bob_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.1, 1);
+
+		Random r = new Random();
+		
+		byte[] randdata = new byte[20];
+		byte[] retdata = new byte[20];
+		
+		Packet p = null;
+		
+		int acks_expected = 0;
+		
+		for (int i=0; i<500; i++) {	
+			r.nextBytes(randdata);
+			alice_0.write(randdata);
+
+			try {
+				p = alice_0.on_sendable();
+			} catch (NothingToSend s) {
+				fail("Alice should sent but she doesn't");
+			}
+			bob_0.on_received(p);
+			acks_expected++;
+			
+			Packet x = bob_0.on_sendable();
+			if (!x.is_ack) fail("Expected ACK, didn't get one");
+			alice_0.on_received(x);
+			retdata = bob_0.read();
+			System.out.format("Readed i=%d\n", i);
+			if (!Arrays.equals(retdata, randdata)) fail("Data mismatch");
+			if (x.window_id != p.window_id) fail("Window ID mismatch");
+			acks_expected--;
+		}
+
+		if (acks_expected != 0) fail("Not all messages acknowledged");
+	}	
+	
 	@Test
 	public void testRTM_MANUAL_resend() throws NothingToSend, NothingToRead, InterruptedException {
 		Channel alice_0 = new Channel((byte)0, RetransmissionMode.RTM_MANUAL, (float)0.5, 1);

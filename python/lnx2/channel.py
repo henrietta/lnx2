@@ -222,11 +222,10 @@ class Channel(object):
             # All retransmissions in RTM_MANUAL are important, as they
             # may contain fresh data. Verify if that's the case..
             # Both RTM_AUTO and RTM_AUTO_ORDERED care a lot about packets
-            if rcd.is_equal(packet):
-                # this is a plain retransmission. Enqueue an ACK
-                self._enq_ack(packet.window_id)
-                return
-
+            
+            self._enq_ack(packet.window_id)
+            if rcd.is_equal(packet): return False
+            
         # This is not a retransmission, this is a new packet
         if self.retransmission_mode == RTM_NONE:
             self.data_to_read.appendleft(packet.data)
@@ -237,6 +236,14 @@ class Channel(object):
             self._enq_ack(packet.window_id)
 
             self.holding_buffer[packet.window_id] = packet
+            
+            i = packet.window_id - self.max_bundle_size
+            if i < 0: i += 64
+            try:
+                del self.holding_buffer[i]
+            except KeyError:
+                pass
+            
             return True
 
         else:   # RTM_AUTO_ORDERED

@@ -39,7 +39,7 @@ public class Connection {
 		this.channels = new HashMap<>();
 		for (Channel chan : channels)
 			this.channels.put(new Integer(chan.channel_id), chan);
-		this.timeout = (long)(timeout * 1000);
+		this.timeout = ((long)(timeout)) * 1000;
 		this.last_received = System.currentTimeMillis();		
 	}
 	
