@@ -3,7 +3,6 @@ package pl.com.henrietta.lnx2;
 import java.util.Collection;
 import java.util.Vector;
 import java.util.HashMap;
-import java.lang.System;
 import pl.com.henrietta.lnx2.Channel;
 import pl.com.henrietta.lnx2.Packet;
 import pl.com.henrietta.lnx2.exceptions.*;

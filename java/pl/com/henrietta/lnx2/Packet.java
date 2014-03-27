@@ -1,7 +1,6 @@
 package pl.com.henrietta.lnx2;
 
 import pl.com.henrietta.lnx2.exceptions.PacketMalformedError;
-import java.lang.System;
 import java.util.Arrays;
 
 

@@ -2,7 +2,6 @@ package pl.com.henrietta.lnx2;
 
 import java.util.LinkedList;
 import java.util.HashMap;
-import java.lang.System;
 import pl.com.henrietta.lnx2.RetransmissionMode;
 import pl.com.henrietta.lnx2.Packet;
 import pl.com.henrietta.lnx2.exceptions.NothingToRead;

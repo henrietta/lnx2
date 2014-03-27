@@ -6,4 +6,5 @@ package pl.com.henrietta.lnx2.exceptions;
  *
  */
 public class LNX2Exception extends Exception {
+	private static final long serialVersionUID = 1L;
 }

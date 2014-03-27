@@ -7,4 +7,5 @@ import pl.com.henrietta.lnx2.exceptions.LNX2Exception;
  * @author Henrietta
  */
 public class NothingToSend extends LNX2Exception {
+	private static final long serialVersionUID = 1L;
 }
